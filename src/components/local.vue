@@ -1,13 +1,9 @@
 <template>
   <section class="locais-section" id="local">
-    <div class="video-container">
-      <video autoplay muted loop playsinline class="video-bg d-desktop">
-        <source src="/bgWorld1.mp4" type="video/mp4" />
-      </video>
-      <video autoplay muted loop playsinline class="video-bg d-mobile">
-        <source src="/bgWorld2.mp4" type="video/mp4" />
-      </video>
-      <div class="video-overlay"></div>
+    <div class="bg-container">
+      <img src="/mapPc.png" alt="Mapa Background Desktop" class="bg-image d-desktop">
+      <img src="/mapPc.png" alt="Mapa Background Mobile" class="bg-image d-mobile">
+      <div class="bg-overlay"></div>
     </div>
 
     <div class="container content-wrapper">
@@ -85,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import L from 'leaflet' 
 import 'leaflet/dist/leaflet.css'
 
@@ -111,14 +107,18 @@ const locais = [
 ];
 
 const localSelecionado = ref(locais[0])
-let map, marker
+let map = null
+let marker = null
 
+// Computa o link real para o Google Maps Directions
 const googleMapsLink = computed(() => {
   const [lat, lng] = localSelecionado.value.coords
+  // URL universal para rotas
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
 })
 
 onMounted(() => {
+  // Inicializa o mapa
   map = L.map('map', {
     zoomControl: false,
     scrollWheelZoom: false
@@ -135,6 +135,14 @@ onMounted(() => {
   });
 
   marker = L.marker(localSelecionado.value.coords, { icon: customIcon }).addTo(map)
+})
+
+// Limpa a instância do mapa ao destruir o componente (evita memory leaks)
+onUnmounted(() => {
+  if (map) {
+    map.remove();
+    map = null;
+  }
 })
 
 watch(localSelecionado, (novo) => {
@@ -156,17 +164,27 @@ watch(localSelecionado, (novo) => {
   font-family: 'Montserrat', sans-serif;
   overflow: hidden;
   min-height: 850px;
-  background: #000;
+  background: #353535;
 }
 
-/* --- Vídeo Background --- */
-.video-container {
+/* --- Background Image Handling --- */
+.bg-container {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   z-index: 0;
 }
-.video-bg { width: 100%; height: 100%; object-fit: cover; }
-.video-overlay {
+.bg-image { 
+  width: 100%; height: 100%; 
+  object-fit: cover; 
+  position: absolute;
+  top: 0; left: 0;
+}
+
+/* Controle de exibição Desktop/Mobile das imagens */
+.d-mobile { display: none; }
+.d-desktop { display: block; }
+
+.bg-overlay {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   background: linear-gradient(180deg, 
@@ -214,7 +232,7 @@ watch(localSelecionado, (novo) => {
 
 .info-side { grid-area: info; }
 .details-side { grid-area: details; }
-.map-side { grid-area: map; height: 100%; min-height: 550px;margin: 20px; }
+.map-side { grid-area: map; height: 100%; min-height: 550px; margin: 20px; }
 
 /* --- Componentes Internos --- */
 .passo { display: flex; align-items: center; gap: 10px; margin-bottom: 1.2rem; }
@@ -261,6 +279,7 @@ watch(localSelecionado, (novo) => {
   padding: 16px; border-radius: 12px; font-weight: 800; font-size: 0.85rem;
   text-transform: uppercase; transition: 0.3s; margin-top: 10px;
 }
+.btn-rota:hover { filter: brightness(0.9); transform: translateY(-2px); }
 
 /* --- Mapa --- */
 .map-container-wrapper {
@@ -269,8 +288,9 @@ watch(localSelecionado, (novo) => {
 }
 #map { width: 100%; height: 100%; z-index: 1; }
 
-.custom-pin { display: flex; align-items: center; justify-content: center; }
-.pin-effect {
+/* Custom Marker CSS */
+:deep(.custom-pin) { display: flex; align-items: center; justify-content: center; }
+:deep(.pin-effect) {
   position: absolute; width: 40px; height: 40px; background: #30ADDA;
   border-radius: 50%; animation: pulse 2s infinite; opacity: 0.4;
 }
@@ -287,10 +307,12 @@ watch(localSelecionado, (novo) => {
   }
 
   .info-side { order: 1; }  /* PASSO 01 */
-  .map-side { order: 2; height: 350px; min-height: 350px; } /* PASSO 02 */
+  .map-side { order: 2; height: 350px; min-height: 350px; margin: 0; } /* PASSO 02 */
   .details-side { order: 3; } /* PASSO 03 */
 
   .d-mobile-only { display: flex; }
+  
+  /* Troca de imagens no mobile */
   .d-desktop { display: none; }
   .d-mobile { display: block; }
   

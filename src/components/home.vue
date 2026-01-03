@@ -1,9 +1,9 @@
 <template>
   <main class="hero-wrapper" id="inicio">
     <div class="video-bg">
-      <video autoplay muted loop playsinline class="video-obj">
-        <source src="/bg1.mp4" type="video/mp4" />
-      </video>
+      <img src="/jpeg.jpeg" class="video-obj">
+       
+      </img>
       <div class="video-overlay"></div>
     </div>
 
@@ -122,10 +122,13 @@
   background: #30ADDA; color: #fff; border: none; padding: 18px 35px;
   font-weight: 800; font-size: 12px; text-transform: uppercase;
   letter-spacing: 1px; cursor: pointer; transition: 0.3s;
+  margin-bottom: 1rem;
+
 }
 .btn-secondary {
   background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3);
   padding: 18px 35px; font-weight: 800; font-size: 12px;
+  margin-bottom: 1rem;
   text-transform: uppercase; cursor: pointer; backdrop-filter: blur(5px);
 }
 
